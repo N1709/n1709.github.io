@@ -13,6 +13,40 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        .blackhole-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        .blackhole {
+            width: 60px;
+            height: 60px;
+            background: #000;
+            border-radius: 50%;
+            box-shadow: 0 0 30px 5px #fff, 0 0 60px 10px #333;
+            animation: absorb 1.2s ease-in-out forwards;
+        }
+
+        @keyframes absorb {
+            0% { transform: scale(0.1); opacity: 0; }
+            50% { transform: scale(1.8); opacity: 1; box-shadow: 0 0 50px 15px #fff; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .loader-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at center, #111 0%, #000 100%);
@@ -29,6 +63,15 @@
             width: 100%;
             max-width: 800px;
             margin: 2vh 0;
+            /* Efek muncul halus untuk konten */
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .container.show {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .header {
@@ -36,7 +79,6 @@
             margin-bottom: 2.5rem;
         }
 
-        /* Style untuk Link Profil agar tidak Ungu */
         .header a {
             text-decoration: none;
             color: #fff !important;
@@ -183,7 +225,11 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="blackhole-overlay" id="loader">
+        <div class="blackhole"></div>
+    </div>
+
+    <div class="container" id="main-content">
         <div class="header">
             <a href="https://github.com/N1709" target="_blank">
                 <div class="profile-container">
@@ -209,14 +255,13 @@
         </div>
 
         <div class="footer">
-    © 2026 N1709. All rights reserved. No unauthorized redistribution.
-</div>
+            © 2026 N1709. All rights reserved. No unauthorized redistribution.
+        </div>
     </div>
 
     <script>
         const ROM_FOLDER = 'upload/';
         const NEWS_FOLDER = 'news/';
-
         const ROM_FILES = ['eunoiaos-1.1-aurora-20260125-laurel-sprout.html'];
         const NEWS_FILES = ['welcome-news.html']; 
 
@@ -268,9 +313,17 @@
             container.innerHTML = htmlContent || `<div class="empty-msg">No valid content found.</div>`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', () => {
             loadContent(ROM_FOLDER, ROM_FILES, 'rom-container', true);
             loadContent(NEWS_FOLDER, NEWS_FILES, 'news-container', false);
+
+            const loader = document.getElementById('loader');
+            const mainContent = document.getElementById('main-content');
+
+            setTimeout(() => {
+                loader.classList.add('loader-hidden');
+                mainContent.classList.add('show');
+            }, 1200);
         });
     </script>
 </body>
