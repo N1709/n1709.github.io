@@ -36,6 +36,17 @@
             margin-bottom: 2.5rem;
         }
 
+        /* Style untuk Link Profil agar tidak Ungu */
+        .header a {
+            text-decoration: none;
+            color: #fff !important;
+            display: inline-block;
+        }
+
+        .header a:visited, .header a:active {
+            color: #fff !important;
+        }
+
         .profile-container {
             width: 25vw;
             height: 25vw;
@@ -48,6 +59,12 @@
             padding: 4px;
             background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .header a:hover .profile-container {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(255, 255, 255, 0.2);
         }
 
         .profile-img {
@@ -140,6 +157,15 @@
             justify-content: space-between;
         }
 
+        .footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 2.5rem;
+            padding-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
         .empty-msg {
             text-align: center;
             color: #555;
@@ -149,57 +175,23 @@
 
         .hidden { display: none; }
 
-        @media (orientation: landscape) and (max-height: 500px) {
-            .header { display: flex; align-items: center; gap: 20px; text-align: left; }
-            .profile-container { margin: 0; width: 80px; height: 80px; min-width: 80px; }
-        }
-
         @media (min-width: 768px) {
             .content-area { padding: 2.5rem; border-radius: 35px; }
             .rom-title, .news-title { font-size: 1.3rem; }
         }
-        .header a {
-    text-decoration: none;
-    color: #fff !important;
-}
-
-.header a:visited, 
-.header a:active, 
-.header a:link {
-    color: #fff !important;
-    text-decoration: none;
-}
-
-.header a:hover {
-    color: #fff;
-    opacity: 0.8;
-}
-        ```css
-.footer {
-    text-align: center;
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 2rem;
-    padding-bottom: 1rem;
-    letter-spacing: 1px;
-}
-
-.footer:hover {
-    color: #fff;
-    transition: 0.3s;
     </style>
 </head>
 <body>
 
     <div class="container">
-       <div class="header">
-    <a href="https://github.com/N1709" target="_blank" style="text-decoration: none;">
-        <div class="profile-container">
-            <img src="./profile/avatar.png" alt="Profile" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=N&background=333&color=fff'">
+        <div class="header">
+            <a href="https://github.com/N1709" target="_blank">
+                <div class="profile-container">
+                    <img src="./profile/avatar.png" alt="Profile" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=N&background=333&color=fff'">
+                </div>
+                <div class="device-name">N1709</div>
+            </a>
         </div>
-        <div class="device-name">N1709</div>
-    </a>
-</div>
 
         <div class="tabs">
             <button class="tab active" id="btn-update" onclick="switchTab('update')">Update</button>
@@ -215,11 +207,12 @@
                 <div id="news-container"></div>
             </div>
         </div>
-    </div>
-    <div class="footer">
+
+        <div class="footer">
             © 2025 N1709 All right reserved
         </div>
-    </div> ```
+    </div>
+
     <script>
         const ROM_FOLDER = 'upload/';
         const NEWS_FOLDER = 'news/';
@@ -236,12 +229,10 @@
 
         async function loadContent(folder, files, containerId, isROM) {
             const container = document.getElementById(containerId);
-            
             if (files.length === 0) {
                 container.innerHTML = `<div class="empty-msg">No ${isROM ? 'updates' : 'news'} available yet.</div>`;
                 return;
             }
-
             container.innerHTML = `<div class="empty-msg">Loading...</div>`;
             
             let htmlContent = '';
