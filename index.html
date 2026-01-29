@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ROM Updates - N1709</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 2vh 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .profile-container {
+            width: 25vw;
+            height: 25vw;
+            max-width: 150px;
+            max-height: 150px;
+            min-width: 100px;
+            min-height: 100px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            background: #111;
+        }
+
+        .device-name {
+            font-size: calc(1.5rem + 1vw);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+
+        .tab {
+            flex: 1;
+            max-width: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #888;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .content-area {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 1.5rem;
+            min-height: 40vh;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.03);
+        }
+
+        .rom-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .rom-item:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .rom-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .rom-info {
+            font-size: 0.85rem;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #555;
+            padding: 3rem 1rem;
+            font-weight: 500;
+        }
+
+        .hidden { display: none; }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .header { display: flex; align-items: center; gap: 20px; text-align: left; }
+            .profile-container { margin: 0; width: 80px; height: 80px; min-width: 80px; }
+        }
+
+        @media (min-width: 768px) {
+            .content-area { padding: 2.5rem; border-radius: 35px; }
+            .rom-title { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="profile-container">
+                <img src="./profile/avatar.png" alt="Profile" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=N&background=333&color=fff'">
+            </div>
+            <div class="device-name">N1709</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" id="btn-update" onclick="switchTab('update')">Update</button>
+            <button class="tab" id="btn-news" onclick="switchTab('news')">News</button>
+        </div>
+
+        <div class="content-area">
+            <div id="update-section">
+                <div id="rom-container"></div>
+            </div>
+
+            <div id="news-section" class="hidden">
+                <div class="empty-msg">No news available at the moment.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ROM_FOLDER = 'upload/';
+        const ROM_FILES = [];
+
+        function switchTab(type) {
+            document.getElementById('update-section').classList.toggle('hidden', type !== 'update');
+            document.getElementById('news-section').classList.toggle('hidden', type !== 'news');
+            document.getElementById('btn-update').classList.toggle('active', type === 'update');
+            document.getElementById('btn-news').classList.toggle('active', type === 'news');
+        }
+
+        async function loadROMs() {
+            const container = document.getElementById('rom-container');
+            
+            if (ROM_FILES.length === 0) {
+                container.innerHTML = '<div class="empty-msg">No updates available yet.</div>';
+                return;
+            }
+
+            container.innerHTML = '<div class="empty-msg">Loading updates...</div>';
+            
+            let htmlContent = '';
+            for (const file of ROM_FILES) {
+                try {
+                    const res = await fetch(ROM_FOLDER + file);
+                    const text = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'text/html');
+                    
+                    const name = doc.querySelector('meta[name="rom-name"]')?.content || 'Unknown ROM';
+                    const device = doc.querySelector('meta[name="device"]')?.content || 'Unknown';
+                    const date = doc.querySelector('meta[name="date"]')?.content || '';
+
+                    htmlContent += `
+                        <div class="rom-item" onclick="window.location.href='${ROM_FOLDER + file}'">
+                            <div class="rom-title">${name}</div>
+                            <div class="rom-info">
+                                <span>${device}</span>
+                                <span>${date}</span>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) { console.error(e); }
+            }
+            container.innerHTML = htmlContent || '<div class="empty-msg">No valid updates found.</div>';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadROMs);
+    </script>
+</body>
+</html>
