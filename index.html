@@ -52,17 +52,22 @@
             background: radial-gradient(circle at center, #111 0%, #000 100%);
             color: #fff;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; 
             padding: 1rem;
             overflow-x: hidden;
+            /* Hide scrollbar for all browsers */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        body::-webkit-scrollbar {
+            display: none;  /* Chrome, Safari and Opera */
         }
 
         .container {
             width: 100%;
             max-width: 800px;
-            margin: 2vh 0;
+            margin: 0 auto;
+            padding: 1rem 0;
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
@@ -75,7 +80,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .header a {
@@ -89,13 +94,13 @@
         }
 
         .profile-container {
-            width: 25vw;
-            height: 25vw;
-            max-width: 150px;
-            max-height: 150px;
-            min-width: 100px;
-            min-height: 100px;
-            margin: 0 auto 1rem;
+            width: 20vw;
+            height: 20vw;
+            max-width: 120px;
+            max-height: 120px;
+            min-width: 80px;
+            min-height: 80px;
+            margin: 0 auto 0.8rem;
             border-radius: 50%;
             padding: 4px;
             background: rgba(255, 255, 255, 0.1);
@@ -161,30 +166,7 @@
             border-radius: 25px;
             padding: 1.5rem;
             min-height: 40vh;
-            max-height: 70vh;
-            overflow-y: auto;
-            overflow-x: hidden;
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.03);
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .content-area::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .content-area::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .content-area::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-
-        .content-area::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
 
         .rom-item, .news-item {
@@ -285,7 +267,7 @@
         const ROM_FOLDER = 'upload/';
         const NEWS_FOLDER = 'news/';
         const ROM_FILES = ['eunoiaos-1.1-aurora-20260125-laurel-sprout.html'];
-        const NEWS_FILES = ['pixellines-news.html', 'News2.html', 'welcome-news.html'];
+        const NEWS_FILES = ['News3.html', 'News2.html', 'welcome-news.html'];
 
         function switchTab(type) {
             document.getElementById('update-section').classList.toggle('hidden', type !== 'update');
