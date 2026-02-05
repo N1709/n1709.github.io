@@ -13,6 +13,11 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         .blackhole-overlay {
             position: fixed;
             top: 0;
@@ -54,12 +59,7 @@
             min-height: 100vh;
             padding: 1rem;
             overflow-x: hidden;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        body::-webkit-scrollbar {
-            display: none;
+            width: 100%;
         }
 
         .container {
@@ -122,7 +122,7 @@
         }
 
         .device-name {
-            font-size: calc(1.5rem + 1vw);
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -134,6 +134,7 @@
             gap: 10px;
             margin-bottom: 1.5rem;
             justify-content: center;
+            width: 100%;
         }
 
         .tab {
@@ -185,25 +186,15 @@
             overflow-y: auto;
             overflow-x: hidden;
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.03);
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            width: 100%;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         .content-area::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .content-area::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .content-area::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-        }
-
-        .content-area::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
+            display: none;
+            width: 0;
+            height: 0;
         }
 
         .rom-item, .news-item {
@@ -214,6 +205,9 @@
             margin-bottom: 1rem;
             cursor: pointer;
             transition: 0.3s;
+            width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .rom-item:hover, .news-item:hover {
@@ -230,12 +224,14 @@
             font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 0.3rem;
+            word-wrap: break-word;
         }
 
         .news-description {
             font-size: 0.9rem;
             color: #ccc;
             margin-bottom: 0.5rem;
+            word-wrap: break-word;
         }
 
         .rom-info, .news-time {
@@ -243,6 +239,8 @@
             color: #888;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .footer {
@@ -261,12 +259,37 @@
             font-weight: 500;
         }
 
-        .hidden { display: none; }
+        .hidden { 
+            display: none !important; 
+        }
 
         @media (min-width: 768px) {
-            .content-area { padding: 2.5rem; border-radius: 35px; }
-            .rom-title, .news-title { font-size: 1.3rem; }
-            .tab { font-size: 1rem; }
+            .content-area { 
+                padding: 2.5rem; 
+                border-radius: 35px; 
+            }
+            .rom-title, .news-title { 
+                font-size: 1.3rem; 
+            }
+            .tab { 
+                font-size: 1rem; 
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .container {
+                padding: 0.5rem 0;
+            }
+            .content-area {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+            .rom-item, .news-item {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -333,15 +356,21 @@
                     const doc = parser.parseFromString(text, 'text/html');
                     
                     if (isROM) {
-                        const name = doc.querySelector('meta[name="rom-name"]')?.content || 'Unknown ROM';
-                        const device = doc.querySelector('meta[name="device"]')?.content || 'Unknown';
+                        const name = doc.querySelector('meta[name="rom-name"]')?.content || '';
+                        const device = doc.querySelector('meta[name="device"]')?.content || '';
                         const date = doc.querySelector('meta[name="date"]')?.content || '';
-                        data.push({ name, device, date, file: folder + file });
+                        
+                        if (name && name !== 'Unknown ROM') {
+                            data.push({ name, device, date, file: folder + file });
+                        }
                     } else {
-                        const title = doc.querySelector('meta[name="news-title"]')?.content || 'No Title';
+                        const title = doc.querySelector('meta[name="news-title"]')?.content || '';
                         const desc = doc.querySelector('meta[name="news-description"]')?.content || '';
                         const date = doc.querySelector('meta[name="date"]')?.content || '';
-                        data.push({ title, desc, date, file: folder + file });
+                        
+                        if (title && title !== 'No Title') {
+                            data.push({ title, desc, date, file: folder + file });
+                        }
                     }
                 } catch (e) { 
                     console.error('Error loading file:', file, e); 
