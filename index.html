@@ -54,9 +54,8 @@
             min-height: 100vh;
             padding: 1rem;
             overflow-x: hidden;
-            /* Hide scrollbar for all browsers */
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         body::-webkit-scrollbar {
@@ -212,6 +211,34 @@
             letter-spacing: 1px;
         }
 
+        .more-btn {
+            display: block;
+            width: 120px;
+            margin: 1.5rem auto 0;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
+
+        .more-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.15);
+        }
+
+        .more-btn:active {
+            transform: translateY(0);
+        }
+
         .empty-msg {
             text-align: center;
             color: #555;
@@ -269,6 +296,12 @@
         const ROM_FILES = ['eunoiaos-1.1-aurora-20260125-laurel-sprout.html'];
         const NEWS_FILES = ['pixellines-news.html', 'News2.html', 'welcome-news.html'];
 
+        const ITEMS_PER_PAGE = 3;
+        let romData = [];
+        let newsData = [];
+        let romCurrentIndex = 0;
+        let newsCurrentIndex = 0;
+
         function switchTab(type) {
             document.getElementById('update-section').classList.toggle('hidden', type !== 'update');
             document.getElementById('news-section').classList.toggle('hidden', type !== 'news');
@@ -276,15 +309,8 @@
             document.getElementById('btn-news').classList.toggle('active', type === 'news');
         }
 
-        async function loadContent(folder, files, containerId, isROM) {
-            const container = document.getElementById(containerId);
-            if (files.length === 0) {
-                container.innerHTML = `<div class="empty-msg">No ${isROM ? 'updates' : 'news'} available yet.</div>`;
-                return;
-            }
-            container.innerHTML = `<div class="empty-msg">Loading...</div>`;
-            
-            let htmlContent = '';
+        async function fetchAllContent(folder, files, isROM) {
+            const data = [];
             for (const file of files) {
                 try {
                     const res = await fetch(folder + file);
@@ -296,30 +322,121 @@
                         const name = doc.querySelector('meta[name="rom-name"]')?.content || 'Unknown ROM';
                         const device = doc.querySelector('meta[name="device"]')?.content || 'Unknown';
                         const date = doc.querySelector('meta[name="date"]')?.content || '';
-                        htmlContent += `
-                            <div class="rom-item" onclick="window.location.href='${folder + file}'">
-                                <div class="rom-title">${name}</div>
-                                <div class="rom-info"><span>${device}</span><span>${date}</span></div>
-                            </div>`;
+                        data.push({ name, device, date, file: folder + file });
                     } else {
                         const title = doc.querySelector('meta[name="news-title"]')?.content || 'No Title';
                         const desc = doc.querySelector('meta[name="news-description"]')?.content || '';
                         const date = doc.querySelector('meta[name="date"]')?.content || '';
-                        htmlContent += `
-                            <div class="news-item" onclick="window.location.href='${folder + file}'">
-                                <div class="news-title">${title}</div>
-                                <div class="news-description">${desc}</div>
-                                <div class="news-time">${date}</div>
-                            </div>`;
+                        data.push({ title, desc, date, file: folder + file });
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) { 
+                    console.error('Error loading file:', file, e); 
+                }
             }
-            container.innerHTML = htmlContent || `<div class="empty-msg">No valid content found.</div>`;
+            return data;
+        }
+
+        function renderROMItems(items) {
+            return items.map(item => `
+                <div class="rom-item" onclick="window.location.href='${item.file}'">
+                    <div class="rom-title">${item.name}</div>
+                    <div class="rom-info"><span>${item.device}</span><span>${item.date}</span></div>
+                </div>
+            `).join('');
+        }
+
+        function renderNewsItems(items) {
+            return items.map(item => `
+                <div class="news-item" onclick="window.location.href='${item.file}'">
+                    <div class="news-title">${item.title}</div>
+                    <div class="news-description">${item.desc}</div>
+                    <div class="news-time">${item.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadMoreROMs() {
+            const container = document.getElementById('rom-container');
+            const moreBtn = document.getElementById('more-rom-btn');
+            
+            if (moreBtn) moreBtn.remove();
+            
+            const endIndex = Math.min(romCurrentIndex + ITEMS_PER_PAGE, romData.length);
+            const itemsToShow = romData.slice(romCurrentIndex, endIndex);
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = renderROMItems(itemsToShow);
+            while (tempDiv.firstChild) {
+                container.appendChild(tempDiv.firstChild);
+            }
+            
+            romCurrentIndex = endIndex;
+            
+            if (romCurrentIndex < romData.length) {
+                const btn = document.createElement('button');
+                btn.id = 'more-rom-btn';
+                btn.className = 'more-btn';
+                btn.textContent = 'More';
+                btn.onclick = loadMoreROMs;
+                container.appendChild(btn);
+            }
+        }
+
+        function loadMoreNews() {
+            const container = document.getElementById('news-container');
+            const moreBtn = document.getElementById('more-news-btn');
+            
+            if (moreBtn) moreBtn.remove();
+            
+            const endIndex = Math.min(newsCurrentIndex + ITEMS_PER_PAGE, newsData.length);
+            const itemsToShow = newsData.slice(newsCurrentIndex, endIndex);
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = renderNewsItems(itemsToShow);
+            while (tempDiv.firstChild) {
+                container.appendChild(tempDiv.firstChild);
+            }
+            
+            newsCurrentIndex = endIndex;
+            
+            if (newsCurrentIndex < newsData.length) {
+                const btn = document.createElement('button');
+                btn.id = 'more-news-btn';
+                btn.className = 'more-btn';
+                btn.textContent = 'More';
+                btn.onclick = loadMoreNews;
+                container.appendChild(btn);
+            }
+        }
+
+        async function initializeContent() {
+            const romContainer = document.getElementById('rom-container');
+            const newsContainer = document.getElementById('news-container');
+            
+            romContainer.innerHTML = '<div class="empty-msg">Loading...</div>';
+            newsContainer.innerHTML = '<div class="empty-msg">Loading...</div>';
+            
+            romData = await fetchAllContent(ROM_FOLDER, ROM_FILES, true);
+            newsData = await fetchAllContent(NEWS_FOLDER, NEWS_FILES, false);
+            
+            romContainer.innerHTML = '';
+            newsContainer.innerHTML = '';
+            
+            if (romData.length === 0) {
+                romContainer.innerHTML = '<div class="empty-msg">No updates available yet.</div>';
+            } else {
+                loadMoreROMs();
+            }
+            
+            if (newsData.length === 0) {
+                newsContainer.innerHTML = '<div class="empty-msg">No news available yet.</div>';
+            } else {
+                loadMoreNews();
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            loadContent(ROM_FOLDER, ROM_FILES, 'rom-container', true);
-            loadContent(NEWS_FOLDER, NEWS_FILES, 'news-container', false);
+            initializeContent();
 
             const loader = document.getElementById('loader');
             const mainContent = document.getElementById('main-content');
