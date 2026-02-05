@@ -181,7 +181,29 @@
             border-radius: 25px;
             padding: 1.5rem;
             min-height: 40vh;
+            max-height: 60vh;
+            overflow-y: auto;
+            overflow-x: hidden;
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.03);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .rom-item, .news-item {
@@ -232,33 +254,6 @@
             letter-spacing: 1px;
         }
 
-        .more-btn {
-            display: block;
-            width: 140px;
-            margin: 1.5rem auto 0;
-            padding: 1rem;
-            background: #fff;
-            color: #000;
-            border: none;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-        }
-
-        .more-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
-        }
-
-        .more-btn:active {
-            transform: translateY(0) scale(0.95);
-        }
-
         .empty-msg {
             text-align: center;
             color: #555;
@@ -272,7 +267,6 @@
             .content-area { padding: 2.5rem; border-radius: 35px; }
             .rom-title, .news-title { font-size: 1.3rem; }
             .tab { font-size: 1rem; }
-            .more-btn { font-size: 1rem; }
         }
     </style>
 </head>
@@ -318,11 +312,8 @@
         const ROM_FILES = ['eunoiaos-1.1-aurora-20260125-laurel-sprout.html'];
         const NEWS_FILES = ['News3.html', 'pixellines-news.html', 'News2.html', 'welcome-news.html'];
 
-        const ITEMS_PER_PAGE = 3;
         let romData = [];
         let newsData = [];
-        let romCurrentPage = 0;
-        let newsCurrentPage = 0;
 
         function switchTab(type) {
             document.getElementById('update-section').classList.toggle('hidden', type !== 'update');
@@ -378,48 +369,6 @@
             `).join('');
         }
 
-        function showROMPage(page) {
-            const container = document.getElementById('rom-container');
-            romCurrentPage = page;
-            
-            const startIndex = page * ITEMS_PER_PAGE;
-            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, romData.length);
-            const itemsToShow = romData.slice(startIndex, endIndex);
-            
-            container.innerHTML = renderROMItems(itemsToShow);
-            
-            const hasMore = endIndex < romData.length;
-            if (hasMore) {
-                const btn = document.createElement('button');
-                btn.id = 'more-rom-btn';
-                btn.className = 'more-btn';
-                btn.textContent = 'More';
-                btn.onclick = () => showROMPage(romCurrentPage + 1);
-                container.appendChild(btn);
-            }
-        }
-
-        function showNewsPage(page) {
-            const container = document.getElementById('news-container');
-            newsCurrentPage = page;
-            
-            const startIndex = page * ITEMS_PER_PAGE;
-            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, newsData.length);
-            const itemsToShow = newsData.slice(startIndex, endIndex);
-            
-            container.innerHTML = renderNewsItems(itemsToShow);
-            
-            const hasMore = endIndex < newsData.length;
-            if (hasMore) {
-                const btn = document.createElement('button');
-                btn.id = 'more-news-btn';
-                btn.className = 'more-btn';
-                btn.textContent = 'More';
-                btn.onclick = () => showNewsPage(newsCurrentPage + 1);
-                container.appendChild(btn);
-            }
-        }
-
         async function initializeContent() {
             const romContainer = document.getElementById('rom-container');
             const newsContainer = document.getElementById('news-container');
@@ -430,19 +379,16 @@
             romData = await fetchAllContent(ROM_FOLDER, ROM_FILES, true);
             newsData = await fetchAllContent(NEWS_FOLDER, NEWS_FILES, false);
             
-            romContainer.innerHTML = '';
-            newsContainer.innerHTML = '';
-            
             if (romData.length === 0) {
                 romContainer.innerHTML = '<div class="empty-msg">No updates available yet.</div>';
             } else {
-                showROMPage(0);
+                romContainer.innerHTML = renderROMItems(romData);
             }
             
             if (newsData.length === 0) {
                 newsContainer.innerHTML = '<div class="empty-msg">No news available yet.</div>';
             } else {
-                showNewsPage(0);
+                newsContainer.innerHTML = renderNewsItems(newsData);
             }
         }
 
