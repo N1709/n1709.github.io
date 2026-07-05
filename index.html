@@ -168,7 +168,58 @@
  
         .nav-right { display: flex; align-items: center; gap: 10px; }
         .nav-left { display: flex; align-items: center; gap: 12px; }
- 
+
+        .music-player {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 4px;
+        }
+        .music-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.25s ease, transform 0.2s ease, color 0.25s ease;
+            flex-shrink: 0;
+        }
+        .music-btn:hover { background: rgba(255, 255, 255, 0.12); }
+        .music-btn:active { transform: scale(0.88); }
+        .music-btn svg { width: 16px; height: 16px; }
+        .music-btn.play-btn {
+            width: 32px; height: 32px;
+            background: #fff;
+            color: #000;
+        }
+        .music-btn.play-btn:hover { background: #eaeaea; }
+        .music-btn.lock-btn.active {
+            background: #fff;
+            color: #000;
+        }
+        .music-btn.lock-btn.active:hover { background: #eaeaea; }
+        .music-title {
+            font-size: 0.7rem;
+            color: var(--subtext);
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 6px 0 4px;
+            display: none;
+        }
+        @media (min-width: 480px) {
+            .music-title { display: block; }
+        }
+
         .btn-download {
             background: white; color: black;
             padding: 10px 22px; border-radius: 50px;
@@ -383,8 +434,27 @@
                 </div>
             </div>
             <a href="./devices.html" class="btn-download">Devices</a>
+
+            <div class="music-player" id="musicPlayer">
+                <button class="music-btn" id="prevBtn" aria-label="Previous track" title="Previous">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="music-btn play-btn" id="playBtn" aria-label="Play/Pause" title="Play/Pause">
+                    <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+                </button>
+                <button class="music-btn" id="nextBtn" aria-label="Next track" title="Next">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+                </button>
+                <button class="music-btn lock-btn" id="lockBtn" aria-label="Repeat this song / lock" title="Keep repeating this song">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a4 4 0 0 0-4 4v3H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V7a4 4 0 0 0-4-4zm-2 4a2 2 0 1 1 4 0v3h-4z"/></svg>
+                </button>
+                <span class="music-title" id="musicTitle">—</span>
+            </div>
         </div>
     </nav>
+
+    <audio id="bgAudio" preload="auto"></audio>
  
     <div class="nav-handle" id="navHandle" title="Pull down to show the menu"></div>
  
@@ -553,6 +623,90 @@
                 loader.classList.add('loader-hidden');
                 mainContent.classList.add('show');
             }, 1200);
+        });
+
+        const PLAYLIST = [
+            { title: 'Track 1', src: 'music/La Cheyenne   El De Las R s.mp3' },
+            { title: 'Track 2', src: 'music/2.mp3' },
+            { title: 'Track 3', src: 'music/3.mp3' }
+        ];
+
+        const audio = document.getElementById('bgAudio');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const lockBtn = document.getElementById('lockBtn');
+        const musicTitle = document.getElementById('musicTitle');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+
+        let trackIndex = 0;
+        let isLocked = false; // true = lagu tidak berganti, diulang terus
+
+        function loadTrack(index, autoplay) {
+            trackIndex = (index + PLAYLIST.length) % PLAYLIST.length;
+            const track = PLAYLIST[trackIndex];
+            audio.src = track.src;
+            musicTitle.textContent = track.title;
+            if (autoplay) attemptPlay();
+        }
+
+        function attemptPlay() {
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    setPlayingUI(true);
+                }).catch(() => {
+
+                    setPlayingUI(false);
+                    const resume = () => {
+                        audio.play().then(() => setPlayingUI(true)).catch(() => {});
+                        document.removeEventListener('click', resume);
+                        document.removeEventListener('touchstart', resume);
+                        document.removeEventListener('keydown', resume);
+                    };
+                    document.addEventListener('click', resume, { once: true });
+                    document.addEventListener('touchstart', resume, { once: true });
+                    document.addEventListener('keydown', resume, { once: true });
+                });
+            }
+        }
+
+        function setPlayingUI(playing) {
+            playIcon.style.display = playing ? 'none' : 'block';
+            pauseIcon.style.display = playing ? 'block' : 'none';
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                attemptPlay();
+            } else {
+                audio.pause();
+                setPlayingUI(false);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => loadTrack(trackIndex - 1, true));
+        nextBtn.addEventListener('click', () => loadTrack(trackIndex + 1, true));
+
+        lockBtn.addEventListener('click', () => {
+            isLocked = !isLocked;
+            lockBtn.classList.toggle('active', isLocked);
+            lockBtn.title = isLocked ? 'Locked: song will repeat' : 'Keep repeating this song';
+        });
+
+        audio.addEventListener('ended', () => {
+            if (isLocked) {
+
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+            } else {
+                loadTrack(trackIndex + 1, true);
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTrack(0, true);
         });
     </script>
 </body>
